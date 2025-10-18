@@ -56,4 +56,7 @@ summarise_player_stats(game_data, results)
 predict_game_outcome(results$final_ratings[c("Alice", "Bob", "Charlie")])
 ```
 
+# Prior art
+
+There are several other descriptions on the web of methods applying the same core idea that we utilise here of using pairwise comparisons to allow multiplayer Elo ratings. This includes a python package [multielo](https://github.com/djcunningham0/multielo).
 

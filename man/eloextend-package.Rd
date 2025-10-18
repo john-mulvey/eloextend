@@ -8,6 +8,13 @@
 \description{
 Extends the Elo rating system to multiplayer games with 3 or more players, providing tools for rating calculation, result prediction, and visualisation and analysis of ratings histories.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://john-mulvey.github.io/eloextend/}
+}
+
+}
 \author{
 \strong{Maintainer}: John Mulvey \email{mulveyjf@gmail.com}
 
