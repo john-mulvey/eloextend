@@ -1,0 +1,280 @@
+---
+title: "Understanding the Rating System"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Understanding the Rating System}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+```{r setup, message=FALSE, warning=FALSE}
+library(eloextend)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+
+This vignette explains the mathematical foundations of the **eloextend** rating system. To do this, we start by introducing the classic Elo system and subsequently explain the modifications required to extend it to multiplayer games.
+
+# Classic Elo Rating System
+
+The [Elo rating system](https://en.wikipedia.org/wiki/Elo_rating_system) provides a method for calculating the relative skill levels of players in two-player games. Originally dveloped for chess, it has since been adopted in many other competitive games
+
+## The Basic Formula
+
+For a two-player game, player A's rating is updated as follows:
+
+$$R_A^{\text{new}} = R_A^{\text{old}} + K \times (S_A - E_A)$$
+
+where:
+
+- $R_A^{\text{old}}$ is player A's current rating
+- $R_A^{\text{new}}$ is player A's updated rating
+- $K$ is the K-factor (controls rating volatility)
+- $S_A$ is the actual score (1 for win, 0 for loss, 0.5 for draw)
+- $E_A$ is the expected score
+
+## Expected Score
+
+The expected score is calculated using a logistic function:
+
+$$E_A = \frac{1}{1 + 10^{(R_B - R_A)/D}}$$
+
+where:
+
+- $R_B$ is the opponent's rating
+- $D$ is the scale parameter (typically 400)
+
+K and D are constants that can be adjusted to fine tune behaviour but there are consensus values (e.g., K=32, D=400) that work well in many scenarios.
+
+## Zero-Sum Property
+
+In classic Elo, if player A gains $x$ rating points, player B loses exactly $x$ points. The total rating in the system remains constant.
+
+# Extension to Multiplayer Games
+
+In order to extend Elo ratings to multiplayer games, we would like to keep some desirable mathematical properties of the Elo system:
+
+1. **Zero-sum property**: Rating changes in any game sum to zero
+2. **Score normalisation**: Game scores always sum to 1
+3. **Expected score consistency**: Expected scores for all players sum to 1
+
+Additionally:
+4. **Two-player convergence**: For n=2 players, reduces to standard Elo
+
+## Pairwise Matchup Approach
+
+**eloextend** achieves this by treating a multiplayer game as the sum of all pairwise matchups between participants.
+
+For example, in a 3-player game where Alice finishes 1st, Bob 2nd, and Charlie 3rd, we consider three implicit matchups:
+- Alice vs Bob (Alice wins)
+- Alice vs Charlie (Alice wins)
+- Bob vs Charlie (Bob wins)
+
+More generally, for a game with $N$ players, there are $\binom{N}{2} = \frac{N(N-1)}{2}$ pairwise matchups.
+
+### Expected Score in Multiplayer
+
+For player A in an $N$-player game against opponents with ratings $R_1, R_2, \ldots, R_{N-1}$:
+
+$$E_A = \frac{1}{\binom{N}{2}} \sum_{i=1}^{N-1} \frac{1}{1 + 10^{(R_i - R_A)/D}}$$
+
+This formula sums player A's expected win probability against each of their $N-1$ opponents, then normalises by the total number of pairwise matchups $\binom{N}{2}$ in the game. This normalisation ensures that expected scores across all players sum to 1.
+
+### Rating Update Formula
+
+The rating update then becomes:
+
+$$R_A^{\text{new}} = R_A^{\text{old}} + K \times (N-1) \times (S_A - E_A)$$
+
+The $(N-1)$ multiplier ensures two features:
+
+1. **Zero-sum property**: Each player's score $S_A$ is based on their performance against $N-1$ opponents. The $(N-1)$ factor scales the rating change to match the number of pairwise matchups each player participates in. When we sum the rating changes across all $N$ players, the total is zero, meaning the total "rating" in the system remains constant.
+
+2. **Backwards compatibility**: When $N=2$, we have $(N-1) = 1$, so the formula reduces exactly to classic Elo: $R_A^{\text{new}} = R_A^{\text{old}} + K \times (S_A - E_A)$.
+
+### Example Calculation
+
+```{r example-multiplayer}
+# 3 player game, all start at rating 1000
+current_ratings <- c(Alice = 1000, Bob = 1000, Charlie = 1000)
+
+# game results: Alice wins, Bob 2nd, Charlie 3rd
+game_ranks <- c(Alice = 1, Bob = 2, Charlie = 3)
+update_ratings(game_ranks, current_ratings)
+```
+
+The sum of changes is zero (within floating-point precision), confirming the zero-sum property.
+
+## Convergence to Classic Elo
+
+For 2-player games, our system is mathematically equivalent to classic Elo:
+
+```{r two-player-convergence}
+# 3 player game, all start at rating 1000
+current_ratings <- c(PlayerA = 1000, PlayerB = 1000)
+
+# game results: Alice wins, Bob 2nd, Charlie 3rd
+game_ranks <- c(PlayerA = 1, PlayerB = 2)
+
+# eloextend calculation
+eloextend_ratings = update_ratings(game_ranks, current_ratings)
+
+# Classic Elo calculation
+R_A <- 1000
+R_B <- 1000
+E_A <- 1 / (1 + 10^((R_B - R_A) / 400))
+E_B <- 1 / (1 + 10^((R_A - R_B) / 400))
+S_A <- 1  # Winner
+S_B <- 0  # Loser
+classic_A <- R_A + 32 * (S_A - E_A)
+classic_B <- R_B + 32 * (S_B - E_B)
+
+# Compare
+data.frame(
+  Implementation = c("eloextend", "classic elo"),
+  PlayerA = c(eloextend_ratings["PlayerA"], classic_A),
+  PlayerB = c(eloextend_ratings["PlayerB"], classic_B)
+)
+```
+
+# Scoring Functions
+
+We saw in the clasical Elo system, that games are scored as follows: 
+- Win = 1
+- Draw = 0.5
+- Loss = 0
+
+**eloextend** offers two methods to extend this to multiplayer games: exponential and linear. The method should be chosen to match your intuition on how much more valuable winning is compared to placing second, third and so on. The default is exponential scoring with $\alpha = 1.4$, which we think is a good balance for many games.
+
+## Exponential Scoring (Recommended)
+
+Exponential scoring uses geometric weighting with parameter $\alpha > 0, \alpha \neq 1$:
+
+$$s_i = \frac{\alpha^{N - r_i} - 1}{\sum_{j=1}^{N}(\alpha^{N - r_j} - 1)}$$
+
+This gives more weight to top finishers. Higher $\alpha$ increases the disparity between ranks, making winning more valuable than intermediate placements.
+
+### The Alpha Parameter
+
+The $\alpha$ parameter controls how much emphasis is placed on top finishers:
+
+- $\alpha = 1.4$ (default): Moderate emphasis on winners
+- $\alpha = 2.0$: Strong emphasis on winners
+- $\alpha \to 1$: Approaches linear scoring
+- $\alpha \to \infty$: Winner-takes-all (winner gets score 1, others get 0)
+
+```{r scoring-function-comparison, fig.width=7, fig.height=5}
+# Visualise different scoring methods
+ranks <- 1:5
+alphas <- c(1.2, 1.4, 1.6, 1.8, 2.0)
+
+score_comparison <- data.frame(
+  rank = ranks,
+  linear = calculate_scores(ranks, method = "linear")
+)
+
+for (a in alphas) {
+  score_comparison[[paste0("exp_", a)]] <- calculate_scores(ranks, method = "exponential", alpha = a)
+}
+
+score_comparison %>%
+  pivot_longer(-rank, names_to = "method", values_to = "score") %>%
+  ggplot(aes(x = rank, y = score, colour = method)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Score Weights by Rank Position",
+    subtitle = "Including linear and exponential scoring methods",
+    x = "Rank (1 = winner)",
+    y = "Normalised Score",
+    colour = "Method"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+
+
+Note that for 2-player games, the exponential scoring formula simplifies such that:
+- Winner receives score = 1
+- Loser receives score = 0
+
+This holds **regardless of $\alpha$**, ensuring convergence to standard Elo.
+
+## Handling Tied Ranks
+
+Both scoring methods handle tied ranks by assigning equal scores to tied players:
+
+```{r tied-ranks}
+# Two players tied for 2nd place
+ranks_with_ties <- c(Alice = 1, Bob = 2, Charlie = 2, David = 4)
+
+linear_tied <- calculate_scores(ranks_with_ties, method = "linear")
+exp_tied <- calculate_scores(ranks_with_ties, method = "exponential", alpha = 1.4)
+
+comparison_tied <- data.frame(
+  Rank = ranks_with_ties,
+  Linear = round(linear_tied, 4),
+  Exponential = round(exp_tied, 4)
+)
+print(comparison_tied)
+```
+
+Bob and Charlie receive identical scores despite being assigned rank 2.
+
+## Linear Scoring
+
+Linear scoring uses arithmetic weighting based on rank position:
+
+$$s_i = \frac{N - r_i}{\sum_{j=1}^{N}(N - r_j)}$$
+
+where $r_i$ is player $i$'s rank (1 = best).
+
+For a game without ties, this simplifies to:
+
+$$s_i = \frac{N - r_i}{\binom{N}{2}} = \frac{2(N - r_i)}{N(N-1)}$$
+
+Linear scoring is simpler and more intuitive than exponential, distributing scores more evenly across ranks. It's most appropriate for games where all finishing positions matter equally.
+
+# Choosing Parameters
+
+## Which Scoring Method?
+
+**Linear Scoring:**
+- Simpler
+- Evenly distributed scores
+- Good for games where all positions matter equally
+
+**Exponential Scoring (recommended):**
+- Emphasises winning
+- More closely matches competitive intuitions
+- Default $\alpha = 1.4$ provides good balance
+- Tunable behaviour via $\alpha$ parameter
+
+## Which Alpha Value?
+
+Consider the nature of your game:
+
+- **Low stakes, casual games** ($\alpha = 1.2$ to $1.4$): For friendly Mario Kart nights or casual board game groups where finishing second or third still matters.
+- **Competitive games** ($\alpha = 1.4$ to $1.8$): For regular tournaments, ranked online play, or competitive board game leagues where winning is important but consistency across finishes matters.
+- **Winner-focused games** ($\alpha = 2.0$ to $3.0$): For high-stakes tournaments or battle royale-style games where only winning really counts.
+
+## Elo parameters (K and D)
+
+*eloextend* mantains the traditional Elo parameters of K (development factor) and D (scaling factor). These function in the same manner as for the Elo rating system, and we defer to existing recommendations for their selection.
+
+
+```{r}
+sessionInfo()
+```
+
