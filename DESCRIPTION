@@ -1,0 +1,27 @@
+Package: eloextend
+Title: Extended Elo-like Ratings for Multiplayer Games
+Version: 0.1.0
+Authors@R:
+    person("John", "Mulvey", , "mulveyjf@gmail.com", role = c("aut", "cre"))
+Description: Extends the Elo rating system to multiplayer games with 3 or more players,
+    providing tools for rating calculation, result prediction, and visualisation and
+    analysis of ratings histories.
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports:
+    dplyr,
+    tidyr,
+    ggplot2,
+    magrittr
+Suggests:
+    plotly,
+    htmlwidgets,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Depends:
+    R (>= 3.5.0)

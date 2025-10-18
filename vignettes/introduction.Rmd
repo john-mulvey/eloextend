@@ -1,0 +1,160 @@
+---
+title: "Introduction to eloextend"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to eloextend}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+```{r setup, message=FALSE, warnings=FALSE}
+library(eloextend)
+library(dplyr)
+library(ggplot2)
+```
+
+# Overview
+
+The **eloextend** package extends the classic Elo rating system to handle multiplayer games with 3 or more players. Here, we demonstrate the key functionality - allowing you to calculate a rating system for your own multiplayer games.
+
+# Generating Sample Data
+
+You'll bring your own data, but for the purposes of demonstration let's make up some example data using `generate_toy_data()`. We'll simulate 30 games over a 2-month period with 5 players. Key features are the inclusion of a game_id (so that we know the order games were played in, if more than once game was played on the same date). As you can see, not all players participated in all games.
+
+```{r generate-data}
+set.seed(42)
+
+start_date <- as.Date("2024-01-01")
+end_date <- as.Date("2024-02-29")
+players <- c("Alice", "Bob", "Charlie", "David", "Eva")
+
+game_data <- generate_toy_data(
+  start_date = start_date,
+  end_date = end_date,
+  players = players,
+  n_games = 30
+)
+
+# View first few games
+head(game_data)
+```
+
+
+# Calculating Ratings, starting from nothing
+
+The convenience function `calculate_all_ratings()` processes an entire history of games:
+
+```{r calculate-all-ratings}
+ratings <- calculate_all_ratings(
+  data = game_data,
+  initial_rating = 1000,
+  K = 32,
+  method = "exponential",
+  alpha = 1.4,
+  D = 400
+)
+```
+
+
+Before we begin to explore the `ratings` object produced, it is worth noting that this is based upon `update_ratings()` which perform the calculation for a single game's results:
+
+```{r update-ratings}
+# Initial ratings (all start at 1000)
+current_ratings <- c(Alice = 1000, Bob = 1000, Charlie = 1000, David = 1000)
+
+# Game results
+game_ranks <- c(Alice = 1, Bob = 2, Charlie = 3, David = NA)
+
+# Update ratings
+new_ratings <- update_ratings(
+  game_ranks = game_ranks,
+  current_ratings = current_ratings,
+  K = 32,
+  method = "exponential",
+  alpha = 1.4
+)
+
+# Show changes
+rating_changes <- new_ratings - current_ratings
+print("Rating changes:")
+```
+
+
+The `ratings` object contains:
+- `final_ratings`: A named vector of each player's final rating after all games.
+- `ratings_history`: A data frame showing how each player's rating changed after each game, in long format.
+```{r}
+head(ratings$ratings_history)
+```
+
+
+
+# Player Statistics
+
+We can quickly calculate some basic statistics summarising the performance of each player to date:
+
+```{r player-stats}
+summarise_player_stats(game_data, ratings)
+```
+
+This shows each player's:
+- Current rating
+- Number of games played
+- Number of wins
+- Number of losses (coming last in a game)
+- Win rate
+
+
+# Visualising Rating History
+
+Finally, `plot_rating_history()` creates a quick way to plot how ratings changed over time. By default, a ggplot2 object is returned.
+
+```{r plot-by-date, fig.width=7, fig.height=5}
+plot_rating_history(
+  ratings$ratings_history,
+  title = "Rating History by Game Order",
+  x_axis = "game_id",
+  interactive = FALSE
+)
+```
+
+Or, with an interactive plot:
+
+```{r plot-interactive, eval=FALSE}
+# Requires plotly and htmlwidgets packages
+plot_rating_history(
+  ratings$ratings_history,
+  title = "Interactive Rating History",
+  x_axis = "game_id",
+  interactive = TRUE
+)
+```
+
+# Predicting Game Outcomes
+
+Beyond general interest, a ratings system can useful because it allows us to predict the outcome of future games.
+
+```{r predict-outcome}
+# get the final rankings for David, Alice and Charlie
+ratings_for_prediction <- ratings$final_ratings[c("David", "Alice", "Charlie")]
+
+# Predict outcome for a game involving those three players
+predictions <- predict_game_outcome(ratings_for_prediction)
+print("Win probabilities:")
+print(sort(predictions, decreasing = TRUE))
+```
+
+
+```{r}
+sessionInfo()
+```
+
