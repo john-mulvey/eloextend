@@ -1,3 +1,7 @@
+  <!-- badges: start -->
+  [![R-CMD-check](https://github.com/john-mulvey/eloextend/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/john-mulvey/eloextend/actions/workflows/R-CMD-check.yaml)
+  <!-- badges: end -->
+
 # Overview
 
 **eloextend** extends the classic Elo rating system to handle multiplayer games with 3 or more players, where the players can be assigned a rank finish order. The package treats multiplayer games as the sum of all pairwise matchups between participants, ensuring that:
