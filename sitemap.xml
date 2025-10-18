@@ -1,0 +1,21 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://john-mulvey.github.io/eloextend/404.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/articles/index.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/articles/introduction.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/articles/rating_system.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/authors.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/index.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/calculate_all_ratings.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/calculate_scores.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/eloextend-package.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/extract_final_ratings.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/generate_toy_data.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/get_expected_score.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/index.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/plot_rating_history.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/predict_game_outcome.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/summarise_player_stats.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/update_ratings.html</loc></url>
+<url><loc>https://john-mulvey.github.io/eloextend/reference/validate_game_data.html</loc></url>
+</urlset>
+
