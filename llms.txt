@@ -1,0 +1,96 @@
+# Overview
+
+[![R-CMD-check](https://github.com/john-mulvey/eloextend/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/john-mulvey/eloextend/actions/workflows/R-CMD-check.yaml)
+
+**eloextend** extends the classic Elo rating system to handle
+multiplayer games with 3 or more players, where the players can be
+assigned a rank finish order. The package treats multiplayer games as
+the sum of all pairwise matchups between participants, ensuring that:
+
+- 2-player games reduce to classical Elo ratings
+- Changes in rating after a game sum to zero
+- Tied ranks are permissible
+
+For more details on how the score is calculated, see the [relevant
+vignette](https://john-mulvey.github.io/eloextend/vignettes/rating_system.Rmd).
+
+# Installation
+
+``` r
+# if required, install remotes package
+install.packages("remotes")
+
+# install package from github
+remotes::install_github("github.com/john-mulvey/eloextend", build_vignettes = TRUE)
+```
+
+# Quick Start
+
+``` r
+library(eloextend)
+
+# Generate example data
+start_date <- as.Date("2024-01-01")
+end_date <- as.Date("2024-03-31")
+players <- c("Alice", "Bob", "Charlie", "David", "Eva")
+
+game_data <- generate_toy_data(start_date, end_date, players, n_games = 50)
+
+# Calculate ratings
+results <- calculate_all_ratings(
+  game_data,
+  initial_rating = 1000,
+  K = 32,
+  method = "exponential",
+  alpha = 1.4
+)
+
+# View final ratings
+results$final_ratings
+
+# Plot rating history
+plot_rating_history(results$ratings_history, x_axis = "game_id")
+
+# Get player statistics
+summarise_player_stats(game_data, results)
+
+# Predict next game outcome
+predict_game_outcome(results$final_ratings[c("Alice", "Bob", "Charlie")])
+```
+
+# Prior art
+
+There are several other descriptions on the web of methods applying the
+same core idea that we utilise here of using pairwise comparisons to
+allow multiplayer Elo ratings. This includes a python package
+[multielo](https://github.com/djcunningham0/multielo).
+
+# Package index
+
+## All functions
+
+- [`calculate_all_ratings()`](https://john-mulvey.github.io/eloextend/reference/calculate_all_ratings.md)
+  : Calculate All Ratings from Game Data
+- [`calculate_scores()`](https://john-mulvey.github.io/eloextend/reference/calculate_scores.md)
+  : Calculate Scores from Rankings
+- [`generate_toy_data()`](https://john-mulvey.github.io/eloextend/reference/generate_toy_data.md)
+  : Generate Toy Data for Testing
+- [`plot_rating_history()`](https://john-mulvey.github.io/eloextend/reference/plot_rating_history.md)
+  : Plot Rating History
+- [`predict_game_outcome()`](https://john-mulvey.github.io/eloextend/reference/predict_game_outcome.md)
+  : Predict Game Outcome
+- [`summarise_player_stats()`](https://john-mulvey.github.io/eloextend/reference/summarise_player_stats.md)
+  : Summarise Player Statistics
+- [`update_ratings()`](https://john-mulvey.github.io/eloextend/reference/update_ratings.md)
+  : Update Ratings After a Single Game
+- [`validate_game_data()`](https://john-mulvey.github.io/eloextend/reference/validate_game_data.md)
+  : Validate Game Data Format
+
+# Articles
+
+### All vignettes
+
+- [Introduction to
+  eloextend](https://john-mulvey.github.io/eloextend/articles/introduction.md):
+- [Understanding the Rating
+  System](https://john-mulvey.github.io/eloextend/articles/rating_system.md):
