@@ -15,3 +15,4 @@ Named numeric vector of final ratings
 \description{
 Convenience function to extract just the final ratings from Elo results.
 }
+\keyword{internal}

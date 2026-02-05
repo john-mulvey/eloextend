@@ -2,9 +2,7 @@
 
 export(calculate_all_ratings)
 export(calculate_scores)
-export(extract_final_ratings)
 export(generate_toy_data)
-export(get_expected_score)
 export(plot_rating_history)
 export(predict_game_outcome)
 export(summarise_player_stats)

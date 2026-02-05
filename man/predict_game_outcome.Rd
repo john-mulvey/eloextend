@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{predict_game_outcome}
 \alias{predict_game_outcome}
-\title{Predict Game Outcome Probabilities}
+\title{Predict Game Outcome}
 \usage{
 predict_game_outcome(player_ratings, D = 400)
 }
@@ -12,11 +12,13 @@ predict_game_outcome(player_ratings, D = 400)
 \item{D}{Numeric scale parameter. Default is 400.}
 }
 \value{
-Named numeric vector of win probabilities (sum to 1)
+Named numeric vector of expected pairwise win rates (sum to 1)
 }
 \description{
-Predicts win probability for each player in an upcoming game
-based on current Elo ratings.
+Estimates the expected pairwise win rate for each player in an upcoming game
+based on current Elo ratings. Each value represents the proportion of
+pairwise matchups that player is expected to win. The values sum to 1
+across all players.
 }
 \examples{
 ratings <- c(Alice = 1200, Bob = 1000, Charlie = 1100)

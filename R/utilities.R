@@ -153,7 +153,7 @@ validate_game_data <- function(data) {
 #'
 #' @param elo_results List returned by calculate_all_ratings()
 #' @return Named numeric vector of final ratings
-#' @export
+#' @keywords internal
 extract_final_ratings <- function(elo_results) {
   if (!is.list(elo_results) || !"final_ratings" %in% names(elo_results)) {
     stop("elo_results must be a list containing 'final_ratings'")
@@ -162,14 +162,16 @@ extract_final_ratings <- function(elo_results) {
 }
 
 
-#' Predict Game Outcome Probabilities
+#' Predict Game Outcome
 #'
-#' Predicts win probability for each player in an upcoming game
-#' based on current Elo ratings.
+#' Estimates the expected pairwise win rate for each player in an upcoming game
+#' based on current Elo ratings. Each value represents the proportion of
+#' pairwise matchups that player is expected to win. The values sum to 1
+#' across all players.
 #'
 #' @param player_ratings Named numeric vector of current Elo ratings for players
 #' @param D Numeric scale parameter. Default is 400.
-#' @return Named numeric vector of win probabilities (sum to 1)
+#' @return Named numeric vector of expected pairwise win rates (sum to 1)
 #' @export
 #' @examples
 #' ratings <- c(Alice = 1200, Bob = 1000, Charlie = 1100)

@@ -20,6 +20,4 @@ Numeric expected score (between 0 and 1)
 Calculates the expected score for a player against a set of opponents
 based on current Elo ratings.
 }
-\examples{
-get_expected_score(1200, c(1000, 1100, 1300), D = 400)
-}
+\keyword{internal}

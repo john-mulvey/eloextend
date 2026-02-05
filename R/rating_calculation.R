@@ -111,9 +111,7 @@ calculate_scores <- function(ranks, method = "exponential", alpha = 1.4) {
 #' @param opponent_ratings Numeric vector of opponent Elo ratings
 #' @param D Numeric scale parameter for Elo calculation. Default is 400.
 #' @return Numeric expected score (between 0 and 1)
-#' @export
-#' @examples
-#' get_expected_score(1200, c(1000, 1100, 1300), D = 400)
+#' @keywords internal
 get_expected_score <- function(player_rating, opponent_ratings, D = 400) {
   if (!is.numeric(player_rating) || length(player_rating) != 1) {
     stop("player_rating must be a single numeric value")
